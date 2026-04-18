@@ -4,6 +4,8 @@ MCP server for storing, versioning, and managing AI agent plans on S3-compatible
 
 Agents interact through MCP tools to securely create, update, and retrieve their own execution context in a structured way.
 
+Supports two transport modes: **stdio** (local CLI) and **HTTP** (remote/network).
+
 ## Quick Start
 
 ```bash
@@ -17,9 +19,38 @@ cp .env.example .env
 # Build
 npm run build
 
-# Run
+# Run in stdio mode (default)
+npm start
+
+# Run in HTTP mode
+TRANSPORT_MODE=http API_KEY=your-secret npm start
+```
+
+## Transport Modes
+
+### Stdio Mode (default)
+
+For local CLI usage. Communicates over stdin/stdout.
+
+```bash
 npm start
 ```
+
+### HTTP Mode
+
+For remote access. Uses MCP Streamable HTTP protocol over Fastify.
+
+```bash
+TRANSPORT_MODE=http \
+  HTTP_PORT=3000 \
+  API_KEY=your-secret-key \
+  npm start
+```
+
+Endpoints:
+- `POST /mcp` — MCP Streamable HTTP endpoint (requires `Authorization: Bearer <api-key>`)
+- `GET /health` — Health check
+- `GET /ready` — Readiness check
 
 ## MCP Tools
 
@@ -90,6 +121,21 @@ npm run build        # Production build
 | `S3_SECRET_ACCESS_KEY` | Yes | - | Secret key |
 | `S3_BUCKET` | No | `agent-vault` | Bucket name |
 | `LOG_LEVEL` | No | `info` | debug, info, warn, error |
+| `TRANSPORT_MODE` | No | `stdio` | `stdio` or `http` |
+| `HTTP_HOST` | No | `127.0.0.1` | HTTP bind address |
+| `HTTP_PORT` | No | `3000` | HTTP bind port |
+| `API_KEY` | When http | - | Bearer token for authentication |
+| `CORS_ORIGIN` | No | `*` | Allowed CORS origins |
+| `RATE_LIMIT_MAX` | No | `100` | Max requests per window |
+| `RATE_LIMIT_WINDOW` | No | `60000` | Rate limit window (ms) |
+
+## Security
+
+- HTTP mode requires API key authentication (`Authorization: Bearer <key>`)
+- CORS configurable via `CORS_ORIGIN`
+- Rate limiting enabled by default (100 req/min)
+- DNS rebinding protection on localhost
+- Access control enforces user/agent isolation
 
 ## License
 
