@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
 import "dotenv/config";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StdioServerTransport } from "@modelcontextprotocol/server";
 import { loadConfig } from "./config/index.js";
 import { S3StorageAdapter } from "./storage/s3-adapter.js";
 import { createVaultServer } from "./mcp/server.js";
 import { Logger } from "./utils/logger.js";
+import { createHttpServer } from "./http/server.js";
 
 async function main() {
   const config = loadConfig();
@@ -21,11 +22,27 @@ async function main() {
     bucket: config.S3_BUCKET,
   });
 
-  const server = createVaultServer({ storage, logger });
-  const transport = new StdioServerTransport();
+  if (config.TRANSPORT_MODE === "http") {
+    const app = createHttpServer({
+      storage,
+      logger,
+      apiKey: config.API_KEY!,
+      host: config.HTTP_HOST,
+      port: config.HTTP_PORT,
+      corsOrigin: config.CORS_ORIGIN,
+      rateLimitMax: config.RATE_LIMIT_MAX,
+      rateLimitWindow: config.RATE_LIMIT_WINDOW,
+    });
 
-  await server.connect(transport);
-  logger.info("AgentVault MCP server running");
+    await app.listen({ port: config.HTTP_PORT, host: config.HTTP_HOST });
+    logger.info(`AgentVault MCP server running on http://${config.HTTP_HOST}:${config.HTTP_PORT}`);
+    logger.info(`Health: http://${config.HTTP_HOST}:${config.HTTP_PORT}/health`);
+  } else {
+    const server = createVaultServer({ storage, logger });
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    logger.info("AgentVault MCP server running (stdio mode)");
+  }
 }
 
 main().catch((error) => {
