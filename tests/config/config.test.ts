@@ -45,3 +45,77 @@ describe("loadConfig", () => {
     ).toThrow();
   });
 });
+
+describe("HTTP configuration", () => {
+  it("should load HTTP config with defaults", () => {
+    const config = loadConfig({
+      S3_ENDPOINT: "https://r2.example.com",
+      S3_ACCESS_KEY_ID: "test-key",
+      S3_SECRET_ACCESS_KEY: "test-secret",
+      API_KEY: "my-secret-api-key",
+    });
+
+    expect(config.HTTP_HOST).toBe("127.0.0.1");
+    expect(config.HTTP_PORT).toBe(3000);
+    expect(config.API_KEY).toBe("my-secret-api-key");
+    expect(config.CORS_ORIGIN).toBe("*");
+    expect(config.RATE_LIMIT_MAX).toBe(100);
+    expect(config.RATE_LIMIT_WINDOW).toBe(60000);
+    expect(config.TRANSPORT_MODE).toBe("stdio");
+  });
+
+  it("should load HTTP mode config from env", () => {
+    const config = loadConfig({
+      S3_ENDPOINT: "https://r2.example.com",
+      S3_ACCESS_KEY_ID: "key",
+      S3_SECRET_ACCESS_KEY: "secret",
+      HTTP_HOST: "0.0.0.0",
+      HTTP_PORT: "8080",
+      API_KEY: "vault-key-123",
+      CORS_ORIGIN: "https://app.example.com",
+      RATE_LIMIT_MAX: "50",
+      RATE_LIMIT_WINDOW: "30000",
+      TRANSPORT_MODE: "http",
+    });
+
+    expect(config.HTTP_HOST).toBe("0.0.0.0");
+    expect(config.HTTP_PORT).toBe(8080);
+    expect(config.API_KEY).toBe("vault-key-123");
+    expect(config.CORS_ORIGIN).toBe("https://app.example.com");
+    expect(config.RATE_LIMIT_MAX).toBe(50);
+    expect(config.RATE_LIMIT_WINDOW).toBe(30000);
+    expect(config.TRANSPORT_MODE).toBe("http");
+  });
+
+  it("should require API_KEY when transport mode is http", () => {
+    expect(() =>
+      loadConfig({
+        S3_ENDPOINT: "https://r2.example.com",
+        S3_ACCESS_KEY_ID: "key",
+        S3_SECRET_ACCESS_KEY: "secret",
+        TRANSPORT_MODE: "http",
+      }),
+    ).toThrow();
+  });
+
+  it("should not require API_KEY in stdio mode", () => {
+    const config = loadConfig({
+      S3_ENDPOINT: "https://r2.example.com",
+      S3_ACCESS_KEY_ID: "key",
+      S3_SECRET_ACCESS_KEY: "secret",
+      TRANSPORT_MODE: "stdio",
+    });
+    expect(config.API_KEY).toBeUndefined();
+  });
+
+  it("should reject invalid transport mode", () => {
+    expect(() =>
+      loadConfig({
+        S3_ENDPOINT: "https://r2.example.com",
+        S3_ACCESS_KEY_ID: "key",
+        S3_SECRET_ACCESS_KEY: "secret",
+        TRANSPORT_MODE: "grpc",
+      }),
+    ).toThrow();
+  });
+});
