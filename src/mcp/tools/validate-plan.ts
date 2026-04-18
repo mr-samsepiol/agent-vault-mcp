@@ -3,9 +3,9 @@ import type { StorageAdapter } from "../../storage/storage-adapter.js";
 import { Logger } from "../../utils/logger.js";
 import { validatePlan } from "../../schema/plan-validator.js";
 
-export const validatePlanInputSchema = {
+export const validatePlanInputSchema = z.object({
   plan: z.record(z.unknown()).describe("Plan document to validate against schema"),
-};
+});
 
 export async function handleValidatePlan(input: { plan: unknown }, _storage: StorageAdapter, _logger: Logger) {
   const result = validatePlan(input.plan);

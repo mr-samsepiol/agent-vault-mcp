@@ -4,11 +4,11 @@ import { Logger } from "../../utils/logger.js";
 import { validatePlan } from "../../schema/plan-validator.js";
 import { VersionManager } from "../../versioning/version-manager.js";
 
-export const savePlanInputSchema = {
+export const savePlanInputSchema = z.object({
   user_id: z.string().describe("Owner user ID"),
   agent_id: z.string().describe("Agent ID that owns this plan"),
   plan: z.record(z.unknown()).describe("The complete plan document"),
-};
+});
 
 export type SavePlanInput = { user_id: string; agent_id: string; plan: unknown };
 

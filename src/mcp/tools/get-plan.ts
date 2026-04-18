@@ -2,12 +2,12 @@ import { z } from "zod";
 import type { StorageAdapter } from "../../storage/storage-adapter.js";
 import { Logger } from "../../utils/logger.js";
 
-export const getPlanInputSchema = {
+export const getPlanInputSchema = z.object({
   user_id: z.string().describe("Owner user ID"),
   agent_id: z.string().describe("Agent ID"),
   plan_id: z.string().describe("Plan ID to retrieve"),
   version: z.number().optional().describe("Specific version number. Omit for latest."),
-};
+});
 
 export async function handleGetPlan(input: { user_id: string; agent_id: string; plan_id: string; version?: number }, storage: StorageAdapter, _logger: Logger) {
   try {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { registerAllTools } from "../../../src/mcp/tools/index.js";
 import { InMemoryStorageAdapter } from "../../../src/storage/storage-adapter.js";
 import { Logger } from "../../../src/utils/logger.js";

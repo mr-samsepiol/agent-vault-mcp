@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import type { StorageAdapter } from "../storage/storage-adapter.js";
 import { Logger } from "../utils/logger.js";
 import { registerAllTools } from "./tools/index.js";

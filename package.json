@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.750.0",
+    "@cfworker/json-schema": "^4.1.1",
     "@fastify/cors": "^10.0.0",
     "@fastify/rate-limit": "^10.0.0",
     "@modelcontextprotocol/fastify": "^2.0.0-alpha.2",

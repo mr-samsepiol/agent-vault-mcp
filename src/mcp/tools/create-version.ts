@@ -4,12 +4,12 @@ import { Logger } from "../../utils/logger.js";
 import { validatePlan } from "../../schema/plan-validator.js";
 import { VersionManager } from "../../versioning/version-manager.js";
 
-export const createVersionInputSchema = {
+export const createVersionInputSchema = z.object({
   user_id: z.string().describe("Owner user ID"),
   agent_id: z.string().describe("Agent ID"),
   plan_id: z.string().describe("Existing plan ID to version"),
   plan: z.record(z.unknown()).describe("Updated plan document for the new version"),
-};
+});
 
 export async function handleCreateVersion(input: { user_id: string; agent_id: string; plan_id: string; plan: unknown }, storage: StorageAdapter, _logger: Logger) {
   const validation = validatePlan(input.plan);
