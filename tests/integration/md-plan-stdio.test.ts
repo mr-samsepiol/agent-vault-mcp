@@ -60,4 +60,16 @@ describe("MD Plan Storage — Stdio Transport Simulation", () => {
       expect(dirPlans).not.toContain("2026-04-19-auth.md");
     });
   });
+
+  describe("Case: List workspaces across multiple projects", () => {
+    const userId = "user-3";
+
+    it("should list all workspace directories for a user", async () => {
+      await storage.saveMdPlan({ userId, projectName: "frontend-app", filename: "plan.md" }, "A");
+      await storage.saveMdPlan({ userId, projectName: "backend-api", filename: "plan.md" }, "B");
+      await storage.saveMdPlan({ userId, projectName: "shared-libs", filename: "plan.md" }, "C");
+      const workspaces = await storage.listWorkspaces(userId);
+      expect(workspaces).toEqual(["backend-api", "frontend-app", "shared-libs"]);
+    });
+  });
 });
