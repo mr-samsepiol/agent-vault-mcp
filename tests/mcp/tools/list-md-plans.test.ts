@@ -13,17 +13,15 @@ describe("handleListMdPlans", () => {
     storage = new InMemoryStorageAdapter();
     logger = new Logger("silent");
     wm = new WorkspaceManager();
-    await storage.saveMdPlan({ userId: "user-1", projectName: "my-repo", filename: "plan-a.md" }, "# A");
-    await storage.saveMdPlan({ userId: "user-1", projectName: "my-repo", filename: "plan-b.md" }, "# B");
-    await storage.saveMdPlan({ userId: "user-1", projectName: "other-project", filename: "plan-c.md" }, "# C");
+    await storage.saveMdPlan({ projectName: "my-repo", filename: "plan-a.md" }, "# A");
+    await storage.saveMdPlan({ projectName: "my-repo", filename: "plan-b.md" }, "# B");
+    await storage.saveMdPlan({ projectName: "other-project", filename: "plan-c.md" }, "# C");
   });
 
   it("should list plans for a specific project", async () => {
     const result = await handleListMdPlans(
-      { user_id: "user-1", project_name: "my-repo" },
-      storage,
-      logger,
-      wm,
+      { project_name: "my-repo" },
+      storage, logger, wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
@@ -32,10 +30,8 @@ describe("handleListMdPlans", () => {
 
   it("should return empty array for project with no plans", async () => {
     const result = await handleListMdPlans(
-      { user_id: "user-1", project_name: "empty" },
-      storage,
-      logger,
-      wm,
+      { project_name: "empty" },
+      storage, logger, wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
@@ -44,24 +40,17 @@ describe("handleListMdPlans", () => {
 
   it("should not leak plans from other projects", async () => {
     const result = await handleListMdPlans(
-      { user_id: "user-1", project_name: "other-project" },
-      storage,
-      logger,
-      wm,
+      { project_name: "other-project" },
+      storage, logger, wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.plans).toEqual(["plan-c.md"]);
   });
 
-  it("should reject missing project_name", async () => {
-    const result = await handleListMdPlans(
-      { user_id: "user-1", project_name: "" },
-      storage,
-      logger,
-      wm,
-    );
+  it("should reject missing project_name when no workspace set", async () => {
+    const result = await handleListMdPlans({}, storage, logger, wm);
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(false);
-    expect(parsed.error).toContain("project_name");
+    expect(parsed.error).toContain("set_workspace");
   });
 });

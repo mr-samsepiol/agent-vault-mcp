@@ -13,7 +13,7 @@ export function registerAllTools(server: McpServer, storage: StorageAdapter, log
   server.registerTool(
     "set_workspace",
     {
-      description: "Set the active workspace for a user. After setting, save_md_plan, get_md_plan, and list_md_plans will use this workspace when project_name is omitted.",
+      description: "Set the active workspace. After setting, save_md_plan, get_md_plan, and list_md_plans will use this workspace when project_name is omitted.",
       inputSchema: wrapZodSchema(setWorkspaceInputSchema),
     },
     (input) => handleSetWorkspace(input, workspaceManager, logger),
@@ -46,7 +46,7 @@ export function registerAllTools(server: McpServer, storage: StorageAdapter, log
   server.registerTool(
     "list_workspaces",
     {
-      description: "List all workspace (project) directories for a user. Returns project names that can be used as project_name in other tools.",
+      description: "List all workspace (project) directories. Returns project names that can be used as project_name in other tools.",
       inputSchema: wrapZodSchema(listWorkspacesInputSchema),
     },
     (input) => handleListWorkspaces(input, storage, logger),

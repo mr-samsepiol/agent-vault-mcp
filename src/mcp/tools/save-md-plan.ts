@@ -5,7 +5,6 @@ import type { Logger } from "../../utils/logger.js";
 import type { WorkspaceManager } from "../../workspace/workspace-manager.js";
 
 export const saveMdPlanInputSchema = z.object({
-  user_id: z.string().min(1, "user_id is required"),
   project_name: z.string().min(1, "project_name is required").optional(),
   filename: z.string().min(1, "filename is required"),
   content: z.string().min(1, "content must not be empty"),
@@ -22,18 +21,18 @@ export async function handleSaveMdPlan(input: unknown, storage: StorageAdapter, 
     };
   }
 
-  const { user_id, filename, content } = parsed.data;
-  const project_name = parsed.data.project_name ?? workspaceManager.get(user_id);
+  const { filename, content } = parsed.data;
+  const project_name = parsed.data.project_name ?? workspaceManager.get();
   if (!project_name) {
     return {
       content: [{ type: "text" as const, text: JSON.stringify({ success: false, error: "project_name is required — either pass it explicitly or call set_workspace first" }) }],
     };
   }
-  const key: MdPlanKey = { userId: user_id, projectName: project_name, filename };
+  const key: MdPlanKey = { projectName: project_name, filename };
 
   try {
     await storage.saveMdPlan(key, content);
-    logger.info("MD plan saved", { user_id, project_name, filename });
+    logger.info("MD plan saved", { project_name, filename });
     return {
       content: [{ type: "text" as const, text: JSON.stringify({ success: true, filename, project_name }) }],
     };

@@ -10,35 +10,22 @@ describe("handleListWorkspaces", () => {
   beforeEach(async () => {
     storage = new InMemoryStorageAdapter();
     logger = new Logger("silent");
-    await storage.saveMdPlan({ userId: "user-1", projectName: "repo-a", filename: "plan.md" }, "# A");
-    await storage.saveMdPlan({ userId: "user-1", projectName: "repo-b", filename: "plan.md" }, "# B");
-    await storage.saveMdPlan({ userId: "user-2", projectName: "repo-c", filename: "plan.md" }, "# C");
+    await storage.saveMdPlan({ projectName: "repo-a", filename: "plan.md" }, "# A");
+    await storage.saveMdPlan({ projectName: "repo-b", filename: "plan.md" }, "# B");
   });
 
-  it("should list workspaces for a user", async () => {
-    const result = await handleListWorkspaces({ user_id: "user-1" }, storage, logger);
+  it("should list all workspaces", async () => {
+    const result = await handleListWorkspaces({}, storage, logger);
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
     expect(parsed.workspaces).toEqual(["repo-a", "repo-b"]);
   });
 
-  it("should return empty array for user with no workspaces", async () => {
-    const result = await handleListWorkspaces({ user_id: "unknown" }, storage, logger);
+  it("should return empty array when no plans exist", async () => {
+    const emptyStorage = new InMemoryStorageAdapter();
+    const result = await handleListWorkspaces({}, emptyStorage, logger);
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
     expect(parsed.workspaces).toEqual([]);
-  });
-
-  it("should reject empty user_id", async () => {
-    const result = await handleListWorkspaces({ user_id: "" }, storage, logger);
-    const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.success).toBe(false);
-    expect(parsed.error).toContain("user_id");
-  });
-
-  it("should not leak workspaces from other users", async () => {
-    const result = await handleListWorkspaces({ user_id: "user-2" }, storage, logger);
-    const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.workspaces).toEqual(["repo-c"]);
   });
 });
