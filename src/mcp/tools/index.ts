@@ -2,36 +2,34 @@ import type { McpServer } from "@modelcontextprotocol/server";
 import type { StorageAdapter } from "../../storage/storage-adapter.js";
 import type { Logger } from "../../utils/logger.js";
 import { wrapZodSchema } from "../zod-schema.js";
-import { handleSavePlan, savePlanInputSchema } from "./save-plan.js";
-import { handleGetPlan, getPlanInputSchema } from "./get-plan.js";
-import { handleListPlans, listPlansInputSchema } from "./list-plans.js";
-import { handleCreateVersion, createVersionInputSchema } from "./create-version.js";
-import { handleValidatePlan, validatePlanInputSchema } from "./validate-plan.js";
+import { handleSaveMdPlan, saveMdPlanInputSchema } from "./save-md-plan.js";
+import { handleGetMdPlan, getMdPlanInputSchema } from "./get-md-plan.js";
+import { handleListMdPlans, listMdPlansInputSchema } from "./list-md-plans.js";
 
 export function registerAllTools(server: McpServer, storage: StorageAdapter, logger: Logger): void {
   server.registerTool(
-    "save_plan",
-    { description: "Create a new agent plan or overwrite the latest version", inputSchema: wrapZodSchema(savePlanInputSchema) },
-    (input) => handleSavePlan(input, storage, logger),
+    "save_md_plan",
+    {
+      description:
+        "Save a Markdown developer plan. project_name should be the git repo name if in a repository, or the parent directory name otherwise.",
+      inputSchema: wrapZodSchema(saveMdPlanInputSchema),
+    },
+    (input) => handleSaveMdPlan(input, storage, logger),
   );
   server.registerTool(
-    "get_plan",
-    { description: "Retrieve a plan by ID. Returns latest version unless version is specified.", inputSchema: wrapZodSchema(getPlanInputSchema) },
-    (input) => handleGetPlan(input, storage, logger),
+    "get_md_plan",
+    {
+      description: "Retrieve a Markdown developer plan by filename and project name.",
+      inputSchema: wrapZodSchema(getMdPlanInputSchema),
+    },
+    (input) => handleGetMdPlan(input, storage, logger),
   );
   server.registerTool(
-    "list_plans",
-    { description: "List all plan IDs for a specific agent", inputSchema: wrapZodSchema(listPlansInputSchema) },
-    (input) => handleListPlans(input, storage, logger),
-  );
-  server.registerTool(
-    "create_version",
-    { description: "Create a new version of an existing plan", inputSchema: wrapZodSchema(createVersionInputSchema) },
-    (input) => handleCreateVersion(input, storage, logger),
-  );
-  server.registerTool(
-    "validate_plan",
-    { description: "Validate a plan document against the schema without saving", inputSchema: wrapZodSchema(validatePlanInputSchema) },
-    (input) => handleValidatePlan(input, storage, logger),
+    "list_md_plans",
+    {
+      description: "List all Markdown developer plans for a project.",
+      inputSchema: wrapZodSchema(listMdPlansInputSchema),
+    },
+    (input) => handleListMdPlans(input, storage, logger),
   );
 }
