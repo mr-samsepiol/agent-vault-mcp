@@ -5,6 +5,7 @@ import { wrapZodSchema } from "../zod-schema.js";
 import { handleSaveMdPlan, saveMdPlanInputSchema } from "./save-md-plan.js";
 import { handleGetMdPlan, getMdPlanInputSchema } from "./get-md-plan.js";
 import { handleListMdPlans, listMdPlansInputSchema } from "./list-md-plans.js";
+import { handleListWorkspaces, listWorkspacesInputSchema } from "./list-workspaces.js";
 
 export function registerAllTools(server: McpServer, storage: StorageAdapter, logger: Logger): void {
   server.registerTool(
@@ -31,5 +32,13 @@ export function registerAllTools(server: McpServer, storage: StorageAdapter, log
       inputSchema: wrapZodSchema(listMdPlansInputSchema),
     },
     (input) => handleListMdPlans(input, storage, logger),
+  );
+  server.registerTool(
+    "list_workspaces",
+    {
+      description: "List all workspace (project) directories for a user. Returns project names that can be used as project_name in other tools.",
+      inputSchema: wrapZodSchema(listWorkspacesInputSchema),
+    },
+    (input) => handleListWorkspaces(input, storage, logger),
   );
 }

@@ -57,4 +57,26 @@ describe("InMemoryStorageAdapter - MD Plans", () => {
     expect(plans1).toHaveLength(1);
     expect(plans2).toHaveLength(1);
   });
+
+  describe("listWorkspaces", () => {
+    it("should return all project names for a user", async () => {
+      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-a", filename: "plan.md" }, "A");
+      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-b", filename: "plan.md" }, "B");
+      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-a", filename: "plan2.md" }, "A2");
+      const workspaces = await storage.listWorkspaces("user-1");
+      expect(workspaces).toEqual(["repo-a", "repo-b"]);
+    });
+
+    it("should not leak workspaces from other users", async () => {
+      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-a", filename: "plan.md" }, "A");
+      await storage.saveMdPlan({ userId: "user-2", projectName: "repo-b", filename: "plan.md" }, "B");
+      const workspaces = await storage.listWorkspaces("user-1");
+      expect(workspaces).toEqual(["repo-a"]);
+    });
+
+    it("should return empty array for user with no plans", async () => {
+      const workspaces = await storage.listWorkspaces("unknown-user");
+      expect(workspaces).toEqual([]);
+    });
+  });
 });
