@@ -62,9 +62,9 @@ export class S3StorageAdapter implements StorageAdapter {
     }
   }
 
-  async listMdPlans(userId: string, projectName: string): Promise<string[]> {
+  async listMdPlans(projectName: string): Promise<string[]> {
     try {
-      const prefix = buildMdPlanListPrefix(userId, projectName);
+      const prefix = buildMdPlanListPrefix(projectName);
       const response = await this.client.send(
         new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix }),
       );
@@ -78,9 +78,9 @@ export class S3StorageAdapter implements StorageAdapter {
     }
   }
 
-  async listWorkspaces(userId: string): Promise<string[]> {
+  async listWorkspaces(): Promise<string[]> {
     try {
-      const prefix = `vault/${userId}/`;
+      const prefix = "vault/";
       const response = await this.client.send(
         new ListObjectsV2Command({
           Bucket: this.bucket,

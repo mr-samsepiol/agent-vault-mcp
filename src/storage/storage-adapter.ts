@@ -4,8 +4,8 @@ import { buildMdPlanS3Key, buildMdPlanListPrefix } from "./md-plan-types.js";
 export interface StorageAdapter {
   saveMdPlan(key: MdPlanKey, content: string): Promise<void>;
   getMdPlan(key: MdPlanKey): Promise<string | null>;
-  listMdPlans(userId: string, projectName: string): Promise<string[]>;
-  listWorkspaces(userId: string): Promise<string[]>;
+  listMdPlans(projectName: string): Promise<string[]>;
+  listWorkspaces(): Promise<string[]>;
 }
 
 export class InMemoryStorageAdapter implements StorageAdapter {
@@ -19,8 +19,8 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     return this.mdPlans.get(buildMdPlanS3Key(key)) ?? null;
   }
 
-  async listMdPlans(userId: string, projectName: string): Promise<string[]> {
-    const prefix = buildMdPlanListPrefix(userId, projectName);
+  async listMdPlans(projectName: string): Promise<string[]> {
+    const prefix = buildMdPlanListPrefix(projectName);
     const filenames: string[] = [];
     for (const k of this.mdPlans.keys()) {
       if (k.startsWith(prefix)) {
@@ -30,8 +30,8 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     return filenames.sort();
   }
 
-  async listWorkspaces(userId: string): Promise<string[]> {
-    const prefix = `vault/${userId}/`;
+  async listWorkspaces(): Promise<string[]> {
+    const prefix = "vault/";
     const workspaces = new Set<string>();
     for (const k of this.mdPlans.keys()) {
       if (k.startsWith(prefix)) {

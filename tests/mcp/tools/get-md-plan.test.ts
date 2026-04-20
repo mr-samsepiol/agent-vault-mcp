@@ -14,17 +14,15 @@ describe("handleGetMdPlan", () => {
     logger = new Logger("silent");
     wm = new WorkspaceManager();
     await storage.saveMdPlan(
-      { userId: "user-1", projectName: "my-repo", filename: "plan.md" },
+      { projectName: "my-repo", filename: "plan.md" },
       "# Plan\n\n## Content\nDetails...",
     );
   });
 
   it("should retrieve an existing MD plan", async () => {
     const result = await handleGetMdPlan(
-      { user_id: "user-1", project_name: "my-repo", filename: "plan.md" },
-      storage,
-      logger,
-      wm,
+      { project_name: "my-repo", filename: "plan.md" },
+      storage, logger, wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
@@ -33,25 +31,21 @@ describe("handleGetMdPlan", () => {
 
   it("should return error for non-existent plan", async () => {
     const result = await handleGetMdPlan(
-      { user_id: "user-1", project_name: "my-repo", filename: "nope.md" },
-      storage,
-      logger,
-      wm,
+      { project_name: "my-repo", filename: "nope.md" },
+      storage, logger, wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(false);
     expect(parsed.error).toContain("not found");
   });
 
-  it("should reject missing project_name", async () => {
+  it("should reject missing project_name when no workspace set", async () => {
     const result = await handleGetMdPlan(
-      { user_id: "user-1", project_name: "", filename: "plan.md" },
-      storage,
-      logger,
-      wm,
+      { filename: "plan.md" },
+      storage, logger, wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(false);
-    expect(parsed.error).toContain("project_name");
+    expect(parsed.error).toContain("set_workspace");
   });
 });

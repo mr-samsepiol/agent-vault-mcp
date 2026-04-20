@@ -17,7 +17,7 @@ describe("MD Plan Storage — HTTP Server Integration", () => {
       logger,
       apiKey,
       host: "127.0.0.1",
-      port: 0, // Use random port for tests
+      port: 0,
       corsOrigin: "*",
       rateLimitMax: 100,
       rateLimitWindow: 60000,
@@ -34,34 +34,28 @@ describe("MD Plan Storage — HTTP Server Integration", () => {
 
   describe("HTTP Server — MD Plan Storage Backend", () => {
     it("should use InMemoryStorageAdapter for HTTP transport", async () => {
-      // Test that the HTTP server is configured with storage
       expect(storage).toBeDefined();
       expect(storage).toBeInstanceOf(InMemoryStorageAdapter);
     });
 
     it("should support saving MD plans for different project contexts", async () => {
-      // Simulate repo-based project
       await storage.saveMdPlan(
-        { userId: "user-http-1", projectName: "my-awesome-repo", filename: "2026-04-19-http-plan.md" },
+        { projectName: "my-awesome-repo", filename: "2026-04-19-http-plan.md" },
         "# HTTP Plan\n\n## Repo Case\nThis was saved via HTTP transport.",
       );
 
-      // Simulate directory-based project
       await storage.saveMdPlan(
-        { userId: "user-http-2", projectName: "my-projects-folder", filename: "2026-04-20-dirname-plan.md" },
+        { projectName: "my-projects-folder", filename: "2026-04-20-dirname-plan.md" },
         "# Directory Plan\n\n## Dirname Case\nSaved without git repo context.",
       );
 
-      // Verify both are stored correctly
       const repoPlan = await storage.getMdPlan({
-        userId: "user-http-1",
         projectName: "my-awesome-repo",
         filename: "2026-04-19-http-plan.md",
       });
       expect(repoPlan).toContain("Repo Case");
 
       const dirPlan = await storage.getMdPlan({
-        userId: "user-http-2",
         projectName: "my-projects-folder",
         filename: "2026-04-20-dirname-plan.md",
       });
@@ -69,23 +63,20 @@ describe("MD Plan Storage — HTTP Server Integration", () => {
     });
 
     it("should isolate plans between different project contexts", async () => {
-      // Save plans in different contexts
       await storage.saveMdPlan(
-        { userId: "user-http-1", projectName: "my-awesome-repo", filename: "repo-plan.md" },
+        { projectName: "my-awesome-repo", filename: "repo-plan.md" },
         "# Repo Plan",
       );
       await storage.saveMdPlan(
-        { userId: "user-http-2", projectName: "my-projects-folder", filename: "dir-plan.md" },
+        { projectName: "my-projects-folder", filename: "dir-plan.md" },
         "# Directory Plan",
       );
 
-      // List plans for repo context
-      const repoPlans = await storage.listMdPlans("user-http-1", "my-awesome-repo");
+      const repoPlans = await storage.listMdPlans("my-awesome-repo");
       expect(repoPlans).toContain("repo-plan.md");
       expect(repoPlans).not.toContain("dir-plan.md");
 
-      // List plans for directory context
-      const dirPlans = await storage.listMdPlans("user-http-2", "my-projects-folder");
+      const dirPlans = await storage.listMdPlans("my-projects-folder");
       expect(dirPlans).toContain("dir-plan.md");
       expect(dirPlans).not.toContain("repo-plan.md");
     });
@@ -132,7 +123,6 @@ describe("MD Plan Storage — HTTP Server Integration", () => {
         }),
       });
       expect(response.statusCode).toBe(200);
-      // SSE format response
       expect(response.body).toContain("event: message");
     });
   });

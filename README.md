@@ -8,15 +8,15 @@ AI agents save implementation plans as `.md` files, organized by project. If the
 
 | Tool | Description | Parameters |
 |------|-------------|------------|
-| `set_workspace` | Set active workspace (like `USE database`) | `user_id`, `project_name` |
-| `list_workspaces` | List all workspaces for a user | `user_id` |
-| `save_md_plan` | Save a Markdown plan | `user_id`, `project_name`*, `filename`, `content` |
-| `get_md_plan` | Retrieve a Markdown plan | `user_id`, `project_name`*, `filename` |
-| `list_md_plans` | List all plans for a project | `user_id`, `project_name`* |
+| `set_workspace` | Set active workspace (like `USE database`) | `project_name` |
+| `list_workspaces` | List all workspaces | — |
+| `save_md_plan` | Save a Markdown plan | `project_name`*, `filename`, `content` |
+| `get_md_plan` | Retrieve a Markdown plan | `project_name`*, `filename` |
+| `list_md_plans` | List all plans for a project | `project_name`* |
 
 > \* `project_name` is optional if `set_workspace` was called — the active workspace is used instead. Explicit values override the active workspace.
 
-**Storage path:** `vault/{userId}/{projectName}/plans/{filename}.md`
+**Storage path:** `vault/{projectName}/plans/{filename}.md`
 
 The `project_name` determines the vault parent directory:
 - **In a git repo** → use the repository name (e.g. `agent-vault-mcp`)
@@ -97,27 +97,26 @@ claude mcp add agent-vault \
 Once connected, an AI agent can:
 
 ```
+set_workspace:
+  project_name: agent-vault-mcp
+
 save_md_plan:
-  user_id: mr-samsepiol
-  project_name: agent-vault-mcp     # repo name
   filename: 2026-04-19-auth.md
   content: "# Auth Feature\n\n## Steps\n1. Add middleware\n2. Add tests"
 
-list_md_plans:
-  user_id: mr-samsepiol
-  project_name: agent-vault-mcp
+list_md_plans: {}
 
 get_md_plan:
-  user_id: mr-samsepiol
-  project_name: agent-vault-mcp
   filename: 2026-04-19-auth.md
+
+list_workspaces: {}
 ```
 
 ## Configuration
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `S3_ENDPOINT` | Yes | - | S3-compatible endpoint URL |
+| `S3_ENDPOINT` | No* | — | S3-compatible endpoint URL (not needed for AWS S3) |
 | `S3_REGION` | No | `auto` | Storage region |
 | `S3_ACCESS_KEY_ID` | Yes | - | Access key |
 | `S3_SECRET_ACCESS_KEY` | Yes | - | Secret key |

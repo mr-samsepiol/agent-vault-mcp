@@ -1,11 +1,11 @@
 export class WorkspaceManager {
-  private active = new Map<string, string>();
+  private active: string | null = null;
 
-  set(userId: string, projectName: string): void {
-    this.active.set(userId, projectName);
+  set(projectName: string): void {
+    this.active = projectName;
   }
 
-  get(userId: string): string | null {
-    return this.active.get(userId) ?? null;
+  get(): string | null {
+    return this.active;
   }
 }
