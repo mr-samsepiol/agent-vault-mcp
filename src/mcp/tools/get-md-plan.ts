@@ -5,7 +5,6 @@ import type { Logger } from "../../utils/logger.js";
 import type { WorkspaceManager } from "../../workspace/workspace-manager.js";
 
 export const getMdPlanInputSchema = z.object({
-  user_id: z.string().min(1, "user_id is required"),
   project_name: z.string().min(1, "project_name is required").optional(),
   filename: z.string().min(1, "filename is required"),
 });
@@ -21,14 +20,14 @@ export async function handleGetMdPlan(input: unknown, storage: StorageAdapter, l
     };
   }
 
-  const { user_id, filename } = parsed.data;
-  const project_name = parsed.data.project_name ?? workspaceManager.get(user_id);
+  const { filename } = parsed.data;
+  const project_name = parsed.data.project_name ?? workspaceManager.get();
   if (!project_name) {
     return {
       content: [{ type: "text" as const, text: JSON.stringify({ success: false, error: "project_name is required — either pass it explicitly or call set_workspace first" }) }],
     };
   }
-  const key: MdPlanKey = { userId: user_id, projectName: project_name, filename };
+  const key: MdPlanKey = { projectName: project_name, filename };
 
   try {
     const content = await storage.getMdPlan(key);

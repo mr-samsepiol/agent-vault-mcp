@@ -5,7 +5,6 @@ import type { MdPlanKey } from "../../src/storage/md-plan-types.js";
 describe("InMemoryStorageAdapter - MD Plans", () => {
   let storage: InMemoryStorageAdapter;
   const mdKey: MdPlanKey = {
-    userId: "user-1",
     projectName: "agent-vault-mcp",
     filename: "2026-04-19-auth-feature.md",
   };
@@ -25,7 +24,7 @@ describe("InMemoryStorageAdapter - MD Plans", () => {
     const key2: MdPlanKey = { ...mdKey, filename: "2026-04-20-api.md" };
     await storage.saveMdPlan(mdKey, mdContent);
     await storage.saveMdPlan(key2, "# API Plan\n\nContent...");
-    const plans = await storage.listMdPlans("user-1", "agent-vault-mcp");
+    const plans = await storage.listMdPlans("agent-vault-mcp");
     expect(plans).toHaveLength(2);
     expect(plans).toContain("2026-04-19-auth-feature.md");
     expect(plans).toContain("2026-04-20-api.md");
@@ -44,7 +43,7 @@ describe("InMemoryStorageAdapter - MD Plans", () => {
   });
 
   it("should return empty array for project with no plans", async () => {
-    const plans = await storage.listMdPlans("user-1", "nonexistent-project");
+    const plans = await storage.listMdPlans("nonexistent-project");
     expect(plans).toEqual([]);
   });
 
@@ -52,30 +51,23 @@ describe("InMemoryStorageAdapter - MD Plans", () => {
     const otherKey: MdPlanKey = { ...mdKey, projectName: "other-project" };
     await storage.saveMdPlan(mdKey, mdContent);
     await storage.saveMdPlan(otherKey, "Other content");
-    const plans1 = await storage.listMdPlans("user-1", "agent-vault-mcp");
-    const plans2 = await storage.listMdPlans("user-1", "other-project");
+    const plans1 = await storage.listMdPlans("agent-vault-mcp");
+    const plans2 = await storage.listMdPlans("other-project");
     expect(plans1).toHaveLength(1);
     expect(plans2).toHaveLength(1);
   });
 
   describe("listWorkspaces", () => {
-    it("should return all project names for a user", async () => {
-      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-a", filename: "plan.md" }, "A");
-      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-b", filename: "plan.md" }, "B");
-      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-a", filename: "plan2.md" }, "A2");
-      const workspaces = await storage.listWorkspaces("user-1");
+    it("should return all project names", async () => {
+      await storage.saveMdPlan({ projectName: "repo-a", filename: "plan.md" }, "A");
+      await storage.saveMdPlan({ projectName: "repo-b", filename: "plan.md" }, "B");
+      await storage.saveMdPlan({ projectName: "repo-a", filename: "plan2.md" }, "A2");
+      const workspaces = await storage.listWorkspaces();
       expect(workspaces).toEqual(["repo-a", "repo-b"]);
     });
 
-    it("should not leak workspaces from other users", async () => {
-      await storage.saveMdPlan({ userId: "user-1", projectName: "repo-a", filename: "plan.md" }, "A");
-      await storage.saveMdPlan({ userId: "user-2", projectName: "repo-b", filename: "plan.md" }, "B");
-      const workspaces = await storage.listWorkspaces("user-1");
-      expect(workspaces).toEqual(["repo-a"]);
-    });
-
-    it("should return empty array for user with no plans", async () => {
-      const workspaces = await storage.listWorkspaces("unknown-user");
+    it("should return empty array when no plans exist", async () => {
+      const workspaces = await storage.listWorkspaces();
       expect(workspaces).toEqual([]);
     });
   });

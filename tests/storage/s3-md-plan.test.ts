@@ -17,7 +17,6 @@ function createAdapter(): S3StorageAdapter {
 
 describe("S3StorageAdapter - MD Plans", () => {
   const mdKey: MdPlanKey = {
-    userId: "user-1",
     projectName: "my-repo",
     filename: "plan.md",
   };
@@ -32,7 +31,7 @@ describe("S3StorageAdapter - MD Plans", () => {
     await adapter.saveMdPlan(mdKey, "# Plan");
     const calls = s3Mock.commandCalls(PutObjectCommand);
     expect(calls).toHaveLength(1);
-    expect(calls[0].args[0].input.Key).toBe("vault/user-1/my-repo/plans/plan.md");
+    expect(calls[0].args[0].input.Key).toBe("vault/my-repo/plans/plan.md");
     expect(calls[0].args[0].input.ContentType).toBe("text/markdown");
   });
 
@@ -56,19 +55,19 @@ describe("S3StorageAdapter - MD Plans", () => {
   it("should list MD plans from S3", async () => {
     s3Mock.on(ListObjectsV2Command).resolves({
       Contents: [
-        { Key: "vault/user-1/my-repo/plans/plan-a.md" },
-        { Key: "vault/user-1/my-repo/plans/plan-b.md" },
+        { Key: "vault/my-repo/plans/plan-a.md" },
+        { Key: "vault/my-repo/plans/plan-b.md" },
       ],
     });
     const adapter = createAdapter();
-    const plans = await adapter.listMdPlans("user-1", "my-repo");
+    const plans = await adapter.listMdPlans("my-repo");
     expect(plans).toEqual(["plan-a.md", "plan-b.md"]);
   });
 
   it("should return empty array when no MD plans found", async () => {
     s3Mock.on(ListObjectsV2Command).resolves({});
     const adapter = createAdapter();
-    const plans = await adapter.listMdPlans("user-1", "empty-project");
+    const plans = await adapter.listMdPlans("empty-project");
     expect(plans).toEqual([]);
   });
 
@@ -76,29 +75,29 @@ describe("S3StorageAdapter - MD Plans", () => {
     it("should extract workspace names from CommonPrefixes", async () => {
       s3Mock.on(ListObjectsV2Command).resolves({
         CommonPrefixes: [
-          { Prefix: "vault/user-1/project-a/" },
-          { Prefix: "vault/user-1/project-b/" },
+          { Prefix: "vault/project-a/" },
+          { Prefix: "vault/project-b/" },
         ],
       });
       const adapter = createAdapter();
-      const workspaces = await adapter.listWorkspaces("user-1");
+      const workspaces = await adapter.listWorkspaces();
       expect(workspaces).toEqual(["project-a", "project-b"]);
     });
 
     it("should return empty array when no CommonPrefixes", async () => {
       s3Mock.on(ListObjectsV2Command).resolves({});
       const adapter = createAdapter();
-      const workspaces = await adapter.listWorkspaces("user-1");
+      const workspaces = await adapter.listWorkspaces();
       expect(workspaces).toEqual([]);
     });
 
     it("should use correct Prefix and Delimiter", async () => {
       s3Mock.on(ListObjectsV2Command).resolves({ CommonPrefixes: [] });
       const adapter = createAdapter();
-      await adapter.listWorkspaces("user-1");
+      await adapter.listWorkspaces();
       const calls = s3Mock.commandCalls(ListObjectsV2Command);
       expect(calls).toHaveLength(1);
-      expect(calls[0].args[0].input.Prefix).toBe("vault/user-1/");
+      expect(calls[0].args[0].input.Prefix).toBe("vault/");
       expect(calls[0].args[0].input.Delimiter).toBe("/");
     });
   });
