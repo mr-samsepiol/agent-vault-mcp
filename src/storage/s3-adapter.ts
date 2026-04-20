@@ -77,24 +77,4 @@ export class S3StorageAdapter implements StorageAdapter {
       throw new StorageError("Failed to list MD plans", error as Error);
     }
   }
-
-  async listWorkspaces(userId: string): Promise<string[]> {
-    try {
-      const prefix = `vault/${userId}/`;
-      const response = await this.client.send(
-        new ListObjectsV2Command({
-          Bucket: this.bucket,
-          Prefix: prefix,
-          Delimiter: "/",
-        }),
-      );
-      if (!response.CommonPrefixes) return [];
-      return response.CommonPrefixes
-        .filter((cp) => cp.Prefix)
-        .map((cp) => cp.Prefix!.slice(prefix.length).replace(/\/$/, ""))
-        .sort();
-    } catch (error) {
-      throw new StorageError("Failed to list workspaces", error as Error);
-    }
-  }
 }

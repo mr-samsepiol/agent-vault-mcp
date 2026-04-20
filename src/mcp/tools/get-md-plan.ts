@@ -2,17 +2,16 @@ import { z } from "zod";
 import type { StorageAdapter } from "../../storage/storage-adapter.js";
 import type { MdPlanKey } from "../../storage/md-plan-types.js";
 import type { Logger } from "../../utils/logger.js";
-import type { WorkspaceManager } from "../../workspace/workspace-manager.js";
 
 export const getMdPlanInputSchema = z.object({
   user_id: z.string().min(1, "user_id is required"),
-  project_name: z.string().min(1, "project_name is required").optional(),
+  project_name: z.string().min(1, "project_name is required"),
   filename: z.string().min(1, "filename is required"),
 });
 
 export type GetMdPlanInput = z.infer<typeof getMdPlanInputSchema>;
 
-export async function handleGetMdPlan(input: unknown, storage: StorageAdapter, logger: Logger, workspaceManager: WorkspaceManager) {
+export async function handleGetMdPlan(input: unknown, storage: StorageAdapter, logger: Logger) {
   const parsed = getMdPlanInputSchema.safeParse(input);
   if (!parsed.success) {
     const errors = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
@@ -21,13 +20,7 @@ export async function handleGetMdPlan(input: unknown, storage: StorageAdapter, l
     };
   }
 
-  const { user_id, filename } = parsed.data;
-  const project_name = parsed.data.project_name ?? workspaceManager.get(user_id);
-  if (!project_name) {
-    return {
-      content: [{ type: "text" as const, text: JSON.stringify({ success: false, error: "project_name is required — either pass it explicitly or call set_workspace first" }) }],
-    };
-  }
+  const { user_id, project_name, filename } = parsed.data;
   const key: MdPlanKey = { userId: user_id, projectName: project_name, filename };
 
   try {

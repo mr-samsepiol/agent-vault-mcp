@@ -1,18 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { InMemoryStorageAdapter } from "../../../src/storage/storage-adapter.js";
 import { Logger } from "../../../src/utils/logger.js";
-import { WorkspaceManager } from "../../../src/workspace/workspace-manager.js";
 import { handleListMdPlans } from "../../../src/mcp/tools/list-md-plans.js";
 
 describe("handleListMdPlans", () => {
   let storage: InMemoryStorageAdapter;
   let logger: Logger;
-  let wm: WorkspaceManager;
 
   beforeEach(async () => {
     storage = new InMemoryStorageAdapter();
     logger = new Logger("silent");
-    wm = new WorkspaceManager();
     await storage.saveMdPlan({ userId: "user-1", projectName: "my-repo", filename: "plan-a.md" }, "# A");
     await storage.saveMdPlan({ userId: "user-1", projectName: "my-repo", filename: "plan-b.md" }, "# B");
     await storage.saveMdPlan({ userId: "user-1", projectName: "other-project", filename: "plan-c.md" }, "# C");
@@ -23,7 +20,6 @@ describe("handleListMdPlans", () => {
       { user_id: "user-1", project_name: "my-repo" },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
@@ -35,7 +31,6 @@ describe("handleListMdPlans", () => {
       { user_id: "user-1", project_name: "empty" },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
@@ -47,7 +42,6 @@ describe("handleListMdPlans", () => {
       { user_id: "user-1", project_name: "other-project" },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.plans).toEqual(["plan-c.md"]);
@@ -58,7 +52,6 @@ describe("handleListMdPlans", () => {
       { user_id: "user-1", project_name: "" },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(false);

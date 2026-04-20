@@ -1,18 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { InMemoryStorageAdapter } from "../../../src/storage/storage-adapter.js";
 import { Logger } from "../../../src/utils/logger.js";
-import { WorkspaceManager } from "../../../src/workspace/workspace-manager.js";
 import { handleSaveMdPlan } from "../../../src/mcp/tools/save-md-plan.js";
 
 describe("handleSaveMdPlan", () => {
   let storage: InMemoryStorageAdapter;
   let logger: Logger;
-  let wm: WorkspaceManager;
 
   beforeEach(() => {
     storage = new InMemoryStorageAdapter();
     logger = new Logger("silent");
-    wm = new WorkspaceManager();
   });
 
   it("should save MD plan and return success", async () => {
@@ -25,7 +22,6 @@ describe("handleSaveMdPlan", () => {
       },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(true);
@@ -38,7 +34,6 @@ describe("handleSaveMdPlan", () => {
       { user_id: "user-1", project_name: "agent-vault-mcp", filename: "empty.md", content: "" },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(false);
@@ -50,7 +45,6 @@ describe("handleSaveMdPlan", () => {
       { user_id: "user-1", project_name: "agent-vault-mcp", filename: "", content: "# Plan" },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(false);
@@ -62,7 +56,6 @@ describe("handleSaveMdPlan", () => {
       { user_id: "user-1", project_name: "", filename: "plan.md", content: "# Plan" },
       storage,
       logger,
-      wm,
     );
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.success).toBe(false);
@@ -75,7 +68,6 @@ describe("handleSaveMdPlan", () => {
       { user_id: "user-1", project_name: "my-repo", filename: "real-plan.md", content },
       storage,
       logger,
-      wm,
     );
     const saved = await storage.getMdPlan({
       userId: "user-1",
