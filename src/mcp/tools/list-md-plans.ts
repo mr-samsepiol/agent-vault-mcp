@@ -1,0 +1,38 @@
+import { z } from "zod";
+import type { StorageAdapter } from "../../storage/storage-adapter.js";
+import type { Logger } from "../../utils/logger.js";
+
+export const listMdPlansInputSchema = z.object({
+  user_id: z.string().min(1, "user_id is required"),
+  project_name: z.string().min(1, "project_name is required"),
+});
+
+export type ListMdPlansInput = z.infer<typeof listMdPlansInputSchema>;
+
+export async function handleListMdPlans(input: unknown, storage: StorageAdapter, logger: Logger) {
+  const parsed = listMdPlansInputSchema.safeParse(input);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify({ success: false, error: errors }) }],
+    };
+  }
+
+  const { user_id, project_name } = parsed.data;
+
+  try {
+    const plans = await storage.listMdPlans(user_id, project_name);
+    return {
+      content: [
+        { type: "text" as const, text: JSON.stringify({ success: true, plans, project_name }) },
+      ],
+    };
+  } catch (error: any) {
+    logger.error("Failed to list MD plans", { error: error.message });
+    return {
+      content: [
+        { type: "text" as const, text: JSON.stringify({ success: false, error: "Failed to list MD plans" }) },
+      ],
+    };
+  }
+}
