@@ -8,15 +8,20 @@ AI agents save implementation plans as `.md` files, organized by project. If the
 
 | Tool | Description | Parameters |
 |------|-------------|------------|
-| `save_md_plan` | Save a Markdown plan | `user_id`, `project_name`, `filename`, `content` |
-| `get_md_plan` | Retrieve a Markdown plan | `user_id`, `project_name`, `filename` |
-| `list_md_plans` | List all plans for a project | `user_id`, `project_name` |
+| `set_workspace` | Set active workspace (like `USE database`) | `user_id`, `project_name` |
+| `list_workspaces` | List all workspaces for a user | `user_id` |
+| `save_md_plan` | Save a Markdown plan | `user_id`, `project_name`*, `filename`, `content` |
+| `get_md_plan` | Retrieve a Markdown plan | `user_id`, `project_name`*, `filename` |
+| `list_md_plans` | List all plans for a project | `user_id`, `project_name`* |
+
+> \* `project_name` is optional if `set_workspace` was called — the active workspace is used instead. Explicit values override the active workspace.
 
 **Storage path:** `vault/{userId}/{projectName}/plans/{filename}.md`
 
-The `project_name` parameter determines the vault parent directory:
+The `project_name` determines the vault parent directory:
 - **In a git repo** → use the repository name (e.g. `agent-vault-mcp`)
 - **Not in a repo** → use the parent directory name (e.g. `Documents`)
+- **Shared workspace** → call `set_workspace` with any name, then omit `project_name` in other tools
 
 ## Quick Start
 
